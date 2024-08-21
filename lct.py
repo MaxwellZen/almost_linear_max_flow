@@ -44,12 +44,32 @@ class Node:
     def is_root(self):
         return self.parent == None or (self.parent.left != self and self.parent.right != self)
     
+    def output(self):
+        out = str(self.key) + " "
+        if self.left != None: out += "left: " + str(self.left.key) + " "
+        else: out += "None" + " "
+
+        if self.right != None: out += "right: " + str(self.right.key) + " "
+        else: out += "None" + " "
+
+        if self.parent != None: out += "parent: " + str(self.parent.key) + " "
+        else: out += "None" + " "
+
+        out += "rev, val, path, update: " + str(self.reverse) + " " + str(self.val) + " " + str(self.path) + " " + str(self.update)
+
+        print(out)
+    
 class LinkCutTree:
     # initialize with labels of all nodes involved
     def __init__(self, keys):
         self.nodes = {}
         for key in keys:
             self.nodes[key] = Node(key)
+        self.nxt_key = 0
+        while self.nxt_key in self.nodes:
+            self.nxt_key += 1
+        self.edge_nodes = {}
+        self.edges = {}
 
     # rotate node c up in the tree
     def rot(self, c):
@@ -158,7 +178,7 @@ class LinkCutTree:
             self.nodes[v].left.parent = None 
             self.nodes[v].left = None 
             self.nodes[v].pull()
-
+        
     # queries whether u and v are connected
     def connected(self, u, v):
         self.expose(u) 
@@ -185,7 +205,41 @@ class LinkCutTree:
         self.expose(v)
         self.nodes[v].update = x 
         self.nodes[v].push()
+
+    def link_edge(self, u, v, x):
+        key = self.nxt_key 
+        c = Node(key)
+        c.val = x
+        c.path = x
+        self.nodes[key] = c
+        while self.nxt_key in self.nodes:
+            self.nxt_key += 1
+        
+        self.link(u, key)
+        self.link(key, v)
+        self.edge_nodes[(u,v)] = key 
+        self.edge_nodes[(v,u)] = key
+        self.edges[key] = (u,v)
+
+    def cut_edge(self, u, v):
+        key = self.edge_nodes[(u,v)]
+        self.cut(u,key)
+        self.cut(v,key)
+        self.nodes.pop(key)
+        self.edge_nodes.pop((u,v))
+        self.edge_nodes.pop((v,u))
+        self.edges.pop(key)
+
+    def update_edge(self, u, v, x):
+        key = self.edge_nodes[(u,v)]
+        self.update(key, x)
     
+    def output(self):
+        for key in self.edges:
+            print(key, self.edges[key])
+        for key in self.nodes:
+            c = self.nodes[key]
+            c.output()
 
 def main():
     print("Expected answer: False, True, False, True")
@@ -216,6 +270,18 @@ def main():
     lct.update_path(1,4,10)
     print(lct.path(2,5))
     print(lct.path(1,3))
+
+    print("Expected answers: 2, 1, 3, 2, 3, 5, 6")
+    lct = LinkCutTree([1, 2, 3, 4, 5])
+    lct.link_edge(1,2,3)
+    lct.link_edge(1,3,4)
+    lct.link_edge(3,4,1)
+    lct.link_edge(3,5,2)
+    print(lct.path(2,5), lct.path(1,4), lct.path(2,3))
+    lct.update_edge(3,4,6)
+    print(lct.path(4,5), lct.path(2,4))
+    lct.update_path(2, 5, 3)
+    print(lct.path(4,5), lct.path(1,4))
 
 if __name__ == "__main__":
     main()
