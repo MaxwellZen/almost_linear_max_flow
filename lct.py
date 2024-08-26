@@ -206,6 +206,39 @@ class LinkCutTree:
         self.nodes[v].update = x 
         self.nodes[v].push()
 
+    def next_on_path(self, u, v, w):
+        self.evert(u)
+        self.expose(v)
+        c = self.nodes[w]
+        self.splay(c)
+        if c.right == None:
+            return None
+        return self.head(c.right).key
+
+    def mincost_helper(self, c):
+        p = c
+        p.push()
+        while p.val != p.path:
+            if p.left != None: p.left.push()
+            if p.right != None: p.right.push()
+
+            if p.left != None and p.left.path == p.path:
+                p = p.left 
+            else:
+                p = p.right 
+        self.splay(p)
+        return p 
+    
+    def mincost(self, u, v):
+        self.evert(u)
+        self.expose(v)
+        return self.mincost_helper(self.nodes[v]).val
+
+    def get_mincost(self, u, v):
+        self.evert(u)
+        self.expose(v)
+        return self.mincost_helper(self.nodes[v]).key
+
     def link_edge(self, u, v, x):
         key = self.nxt_key 
         c = Node(key)
@@ -233,6 +266,10 @@ class LinkCutTree:
     def update_edge(self, u, v, x):
         key = self.edge_nodes[(u,v)]
         self.update(key, x)
+
+    def get_mincost_edge(self, u, v):
+        key = self.get_mincost(u, v)
+        return self.edges[key]
     
     def output(self):
         for key in self.edges:
