@@ -24,11 +24,14 @@ class ESTree:
         self.alpha = {}
         self.beta = {}
         self.gamma = {}
+
         for u in self.graph:
             self.alpha[u] = []
             self.beta[u] = []
             self.gamma[u] = []
             for nb in self.graph[u]:
+                if u not in self.level or nb not in self.level:
+                    continue
                 if self.level[nb] == self.level[u] - 1:
                     self.alpha[u].append(nb)
                 elif self.level[nb] == self.level[u]:
@@ -42,6 +45,7 @@ class ESTree:
         if self.level[u] < self.level[v]:
             u,v = v,u 
         q = deque()
+
         if self.level[u] > self.level[v]:
             self.alpha[u].remove(v)
             self.gamma[v].remove(u)
@@ -54,10 +58,12 @@ class ESTree:
         while len(q) != 0:
             node = q.popleft()
             self.level[node] += 1
+
             for nb in self.beta[node]:
                 self.beta[nb].remove(node)
                 self.gamma[nb].append(node)
             self.alpha[node] = self.beta[node]
+
             for nb in self.gamma[node]:
                 self.alpha[nb].remove(node)
                 self.beta[nb].append(node)
@@ -65,16 +71,9 @@ class ESTree:
                     q.append(nb)
             self.beta[node] = self.gamma[node]
             self.gamma[node] = []
+
             if len(self.alpha[node]) == 0:
                 q.append(node)
-
-
-    # def path_to_root(self, u):
-    #     ans = [u]
-    #     while u != self.source:
-    #         u = self.alpha[u][0]
-    #         ans.append(u)
-    #     return ans
 
     def lca(self, u, v):
         if self.level[u] < self.level[v]:
