@@ -431,6 +431,7 @@ def calculate_phi(graph):
 def expander_decomp_test():
     trials = 100
     errors = 0
+    successes = 0
     for trial in range(trials):
         n = 300
         m = 600
@@ -480,7 +481,9 @@ def expander_decomp_test():
                 # print(graph_i)
                 # A, R, case = cut_matching(graph_i, m_i, phi)
                 # print(A, R, case)
-    print("Tests conclude with", errors, "errors")
+            else:
+                successes += 1
+    print("Tests conclude with", errors, "errors and", successes, "successes")
         
 
 def main():
